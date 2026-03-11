@@ -99,10 +99,60 @@
         transition: transform 0.3s ease;
         z-index: 1;
         position: relative;
+        border-radius: 20px;
+        padding: 8px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+        backdrop-filter: blur(10px);
+        box-shadow: 
+            0 8px 32px rgba(46, 155, 50, 0.15),
+            0 2px 8px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(46, 155, 50, 0.1);
+    }
+    
+    .logo-top::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 20px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
     }
     
     .logo-top:hover {
-        transform: scale(1.05) translateY(-5px);
+        transform: scale(1.05) translateY(-5px) rotate(2deg);
+        box-shadow: 
+            0 12px 40px rgba(46, 155, 50, 0.25),
+            0 4px 12px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+    
+    .logo-top:hover::before {
+        opacity: 0.1;
+    }
+    
+    .logo-top:active {
+        transform: scale(1.02) translateY(-2px);
+        transition: transform 0.1s ease;
+    }
+    
+    /* Logo card animation */
+    @keyframes logoFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .logo-top {
+        animation: logoFloat 6s ease-in-out infinite;
+    }
+    
+    .logo-top:hover {
+        animation-play-state: paused;
     }
 
     h1 {
@@ -372,7 +422,7 @@
 
     <div class="main">
 
-        <img src="nn-removebg-preview.png" class="logo-top" alt="logo">
+        <img src="chui logo.jpeg" class="logo-top" alt="CHUITECHMA logo">
 
         <h1>Welcome to<br>CHUITECHMA CHAT BOT</h1>
 

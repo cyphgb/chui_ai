@@ -307,6 +307,37 @@
     gap:12px; 
     align-items:center;
   }
+  
+  .controls img {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    padding: 4px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(10px);
+    box-shadow: 
+      0 4px 16px rgba(46, 155, 50, 0.15),
+      0 1px 4px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(46, 155, 50, 0.1);
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .controls img:hover {
+    transform: scale(1.05) rotate(2deg);
+    box-shadow: 
+      0 6px 24px rgba(46, 155, 50, 0.25),
+      0 2px 8px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+  
+  .controls img:active {
+    transform: scale(1.02);
+    transition: transform 0.1s ease;
+  }
+  
   .new-chat { 
     background:transparent; 
     border:2px solid var(--primary); 
@@ -637,8 +668,50 @@
     }
     
     .controls img {
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      padding: 4px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+      backdrop-filter: blur(10px);
+      box-shadow: 
+        0 4px 16px rgba(46, 155, 50, 0.15),
+        0 1px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(46, 155, 50, 0.1);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    
+    .controls img::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
+    
+    .controls img:hover {
+      transform: scale(1.05) rotate(2deg);
+      box-shadow: 
+        0 6px 24px rgba(46, 155, 50, 0.25),
+        0 2px 8px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+    
+    .controls img:hover::before {
+      opacity: 0.1;
+    }
+    
+    .controls img:active {
+      transform: scale(1.02);
+      transition: transform 0.1s ease;
     }
   }
   
@@ -1015,7 +1088,7 @@
       <div class="title">CHUITECHMA Chatbot</div>
 
       <div class="controls">
-        <img src="nn-removebg-preview.png" alt="chuitechma logo" width="50" height="50">
+        <img src="chui logo.jpeg" alt="CHUITECHMA logo" width="50" height="50">
         <button class="new-chat" id="newChatBtn">+ New Chat</button>
         <select class="language-selector" id="languageSelector">
           <option value="en">English</option>
