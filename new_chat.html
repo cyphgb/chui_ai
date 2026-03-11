@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#2e9b32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CHUITECHMA Chatbot">
+<meta name="description" content="CHUITECHMA University Chatbot - Your smart assistant for admissions, fees, departments, and campus information">
+<meta name="keywords" content="CHUITECHMA, university, chatbot, admissions, fees, departments, education">
+<meta name="author" content="CHUITECHMA University">
+<title>CHUITECHMA-Chatbot</title>
+<style>
+  :root{
+    --primary: #2e9b32;
+    --primary-light: limegreen;
+    --bg: #f7f7f7;
+    --panel: #fff;
+    --text: #111;
+    --muted: #666;
+    --card: #e9f7ee;
+    --user-bg: #cfeede;
+    --bot-bg: #efefef;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.12);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.15);
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body.dark {
+    --bg: #0f1113;
+    --panel: #111214;
+    --text: #e8eef0;
+    --muted: #9aa4a6;
+    --card: #163424;
+    --user-bg: #244a36;
+    --bot-bg: #1b1b1b;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, var(--bg) 0%, #e8e8e8 100%);
+    color:var(--text);
+    height:100vh;
+    display:flex;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  /* SIDEBAR (hidden by default) */
+  .sidebar {
+    width:280px;
+    background: linear-gradient(135deg, var(--primary) 0%, #268429 100%);
+    color:#fff;
+    padding:20px;
+    position:fixed;
+    left:-320px;
+    top:0;
+    bottom:0;
+    transition:left .28s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index:40;
+    display:flex;
+    flex-direction:column;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
+  }
+  .sidebar.show{ 
+    left:0; 
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar .top {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .sidebar h3{ 
+    margin:0; 
+    font-size:20px; 
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+  .close-btn { 
+    background:rgba(255,255,255,0.1); 
+    border:none; 
+    color:#fff; 
+    font-size:20px; 
+    cursor:pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+  }
+  .close-btn:hover {
+    background: rgba(255,255,255,0.2);
+    transform: scale(1.05);
+  }
+  .sidebar .note { 
+    font-size:13px; 
+    opacity:.95; 
+    margin:16px 0; 
+    color:rgba(255,255,255,.95);
+    line-height: 1.5;
+  }
+  .history-list { 
+    margin-top:12px; 
+    overflow:auto; 
+    flex:1; 
+    padding-right:8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.2) transparent;
+  }
+  .history-list::-webkit-scrollbar {
+    width: 4px;
+  }
+  .history-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .history-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+  }
+  .session-item {
+    background: rgba(255,255,255,0.08);
+    padding:12px;
+    border-radius:var(--border-radius);
+    margin-bottom:8px;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    transition: var(--transition);
+    border: 1px solid transparent;
+  }
+  .session-item:hover {
+    background: rgba(255,255,255,0.12);
+    transform: translateX(4px);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .session-item .s-left{ 
+    font-size:14px; 
+    color:#fff; 
+    opacity:.95;
+    font-weight: 500;
+  }
+  .session-item small{ 
+    display:block; 
+    color:rgba(255,255,255,.8); 
+    font-size:11px; 
+    opacity:.9;
+    margin-top: 2px;
+  }
+  .session-delete { 
+    background:transparent; 
+    border:none; 
+    color:#fff; 
+    font-size:16px; 
+    cursor:pointer; 
+    opacity:.8;
+    padding: 4px;
+    border-radius: 4px;
+    transition: var(--transition);
+  }
+  .session-delete:hover {
+    opacity: 1;
+    background: rgba(255,255,255,0.1);
+  }
+
+  .sidebar .foot { 
+    margin-top:16px; 
+    font-size:13px; 
+    color:rgba(255,255,255,.9);
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    line-height: 1.5;
+  }
+
+  /* MAIN */
+  .main {
+    margin-left:0;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    padding:24px;
+    transition:margin-left .28s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, var(--panel) 0%, #f8f9fa 100%);
+  }
+
+  .topbar {
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding: 16px 20px;
+    background: var(--panel);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 20px;
+  }
+  .hamburger {
+    font-size:24px;
+    cursor:pointer;
+    border:none;
+    background:linear-gradient(135deg, var(--primary), var(--primary-light));
+    color:#fff;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .hamburger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+  
+  .hamburger:hover {
+    transform: scale(1.05) rotate(5deg);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .hamburger:hover::before {
+    left: 100%;
+  }
+  
+  .hamburger:active {
+    transform: scale(0.95);
+  }
+  
+  .hamburger.active {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    animation: hamburgerPulse 0.3s ease;
+  }
+  
+  @keyframes hamburgerPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  
+  /* Hamburger icon animation */
+  .hamburger-icon {
+    position: relative;
+    width: 20px;
+    height: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .hamburger-icon span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: currentColor;
+    border-radius: 1px;
+    transition: var(--transition);
+  }
+  
+  .hamburger.active .hamburger-icon span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  
+  .hamburger.active .hamburger-icon span:nth-child(2) {
+    opacity: 0;
+  }
+  
+  .hamburger.active .hamburger-icon span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+  }
+  .title { 
+    font-weight:700; 
+    font-size:22px; 
+    color:var(--text);
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .controls { 
+    margin-left:auto; 
+    display:flex; 
+    gap:12px; 
+    align-items:center;
+  }
+  .new-chat { 
+    background:transparent; 
+    border:2px solid var(--primary); 
+    color:var(--primary); 
+    padding:10px 16px; 
+    border-radius:10px; 
+    cursor:pointer;
+    font-weight: 600;
+    transition: var(--transition);
+  }
+  .new-chat:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .dark-toggle { 
+    background:linear-gradient(135deg, var(--primary), var(--primary-light)); 
+    color:#fff; 
+    padding:10px 12px; 
+    border-radius:10px; 
+    border:none; 
+    cursor:pointer;
+    font-size: 16px;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+  }
+  .dark-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* CARDS */
+  .cards {
+    margin-top:16px;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .card {
+    background:linear-gradient(135deg, var(--card) 0%, #f0f9f2 100%);
+    color:var(--text);
+    padding:14px 18px;
+    border-radius:var(--border-radius);
+    cursor:pointer;
+    border:1px solid rgba(46, 155, 50, 0.1);
+    white-space:nowrap;
+    font-weight:600;
+    font-size:14px;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(46, 155, 50, 0.1), transparent);
+    transition: left 0.5s ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+  }
+  .card:hover::before {
+    left: 100%;
+  }
+  .hide { display:none !important }
+
+  /* CHAT CONTAINER */
+  .chat-wrap {
+    margin-top:16px;
+    background:var(--panel);
+    border-radius:12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    display:flex;
+    flex-direction:column;
+    height: calc(100vh - 170px);
+    min-height:300px;
+    overflow:hidden;
+  }
+  .chat-body {
+    padding:16px;
+    overflow:auto;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .msg { max-width:75%; padding:10px 12px; border-radius:12px; line-height:1.35; }
+  .msg.user { align-self:flex-end; background:var(--user-bg); color:var(--text) }
+  .msg.bot { align-self:flex-start; background:var(--bot-bg); color:var(--text) }
+
+  .typing {
+    display:inline-flex;
+    gap:6px;
+    align-items:center;
+    height:18px;
+  }
+  .typing .dot{
+    width:7px;height:7px;border-radius:50%;background:var(--primary);
+    animation: updown .7s infinite ease-in-out;
+  }
+  .typing .dot:nth-child(2){ animation-delay:.12s }
+  .typing .dot:nth-child(3){ animation-delay:.24s }
+  @keyframes updown { 0%{ transform:translateY(0) } 50%{ transform:translateY(-6px) } 100%{ transform:translateY(0) } }
+
+  .chat-footer { 
+    padding:16px; 
+    border-top:1px solid rgba(46, 155, 50, 0.1); 
+    display:flex; 
+    gap:12px; 
+    align-items:center; 
+    background:linear-gradient(135deg, var(--panel) 0%, #f8f9fa 100%);
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+  }
+  .chat-input { 
+    flex:1; 
+    padding:12px 16px; 
+    border-radius:var(--border-radius); 
+    border:2px solid rgba(46, 155, 50, 0.1); 
+    font-size:15px; 
+    background: rgba(255, 255, 255, 0.8);
+    color:var(--text);
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+  }
+  .chat-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(46, 155, 50, 0.1);
+  }
+  .send-btn { 
+    background:linear-gradient(135deg, var(--primary), var(--primary-light)); 
+    color:#fff; 
+    padding:12px 20px; 
+    border-radius:var(--border-radius); 
+    border:none; 
+    cursor:pointer; 
+    font-weight:600;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+  }
+  .send-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .voice-btn { 
+    background:linear-gradient(135deg, var(--primary), var(--primary-light)); 
+    color:#fff; 
+    padding:12px 16px; 
+    border-radius:var(--border-radius); 
+    border:none; 
+    cursor:pointer; 
+    font-size:14px; 
+    min-width:44px;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+  }
+  .voice-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .voice-btn.recording { 
+    background:linear-gradient(135deg, #dc3545, #c82333); 
+    animation: pulse 1.5s infinite;
+  }
+  .voice-btn.disabled { 
+    opacity:0.5; 
+    cursor:not-allowed;
+    transform: none !important;
+  }
+  @keyframes pulse { 
+    0% { box-shadow:0 0 0 0 rgba(220,53,69,0.7); } 
+    70% { box-shadow:0 0 0 10px rgba(220,53,69,0); } 
+    100% { box-shadow:0 0 0 0 rgba(220,53,69,0); } 
+  }
+  .language-selector { 
+    margin-left:12px; 
+    padding:10px 14px; 
+    border-radius:var(--border-radius); 
+    border:2px solid var(--primary); 
+    background: rgba(255, 255, 255, 0.9);
+    color:var(--text); 
+    cursor:pointer;
+    font-weight: 500;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+  }
+  .language-selector:hover {
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  /* Voice recording interface */
+  .voice-recording-panel {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel);
+    border: 2px solid var(--primary);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    display: none;
+    z-index: 1000;
+    min-width: 300px;
+    text-align: center;
+  }
+  .voice-recording-panel.active {
+    display: block;
+    animation: slideUp 0.3s ease-out;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+  .recording-timer {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary);
+    margin-bottom: 10px;
+  }
+  .recording-waveform {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    gap: 3px;
+    margin-bottom: 15px;
+  }
+  .waveform-bar {
+    width: 4px;
+    background: var(--primary);
+    border-radius: 2px;
+    animation: wave 1.2s infinite ease-in-out;
+  }
+  .waveform-bar:nth-child(1) { animation-delay: 0s; height: 20px; }
+  .waveform-bar:nth-child(2) { animation-delay: 0.1s; height: 30px; }
+  .waveform-bar:nth-child(3) { animation-delay: 0.2s; height: 25px; }
+  .waveform-bar:nth-child(4) { animation-delay: 0.3s; height: 35px; }
+  .waveform-bar:nth-child(5) { animation-delay: 0.4s; height: 28px; }
+  .waveform-bar:nth-child(6) { animation-delay: 0.5s; height: 32px; }
+  .waveform-bar:nth-child(7) { animation-delay: 0.6s; height: 22px; }
+  @keyframes wave {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.5); }
+  }
+  .recording-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  .recording-btn {
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
+  }
+  .msg:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  .msg.highlighted {
+    border: 2px solid var(--primary);
+    background: var(--card);
+    animation: highlightPulse 0.5s ease;
+    box-shadow: 0 0 0 4px rgba(46, 155, 50, 0.1);
+  }
+  @keyframes highlightPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+  .msg.user { 
+    align-self:flex-end; 
+    background:linear-gradient(135deg, var(--user-bg) 0%, #b8e6c6 100%); 
+    color:var(--text);
+    border-bottom-right-radius: 4px;
+  }
+  .msg.bot { 
+    align-self:flex-start; 
+    background:linear-gradient(135deg, var(--bot-bg) 0%, #f5f5f5 100%); 
+    color:var(--text);
+    border-bottom-left-radius: 4px;
+  }
+  
+  /* Voice reading indicator */
+  .voice-reading-indicator {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    animation: readingPulse 1.5s infinite;
+  }
+  .voice-reading-indicator.active {
+    display: flex;
+  }
+  @keyframes readingPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+  }
+
+  /* Enhanced Mobile Responsiveness */
+  @media (max-width: 1200px) {
+    .main {
+      padding: 20px;
+    }
+    
+    .topbar {
+      padding: 12px 16px;
+    }
+    
+    .controls img {
+      width: 40px;
+      height: 40px;
+    }
+  }
+  
+  @media (max-width: 840px){
+    .sidebar{ 
+      width:100%; 
+      left:-110%; 
+    }
+    .sidebar.show{ 
+      left:0; 
+    }
+    
+    .main {
+      padding: 16px;
+    }
+    
+    .topbar {
+      padding: 12px;
+      gap: 12px;
+    }
+    
+    .hamburger {
+      width: 44px;
+      height: 44px;
+    }
+    
+    .title{
+      font-size: 18px;
+    }
+    
+    .card{ 
+      padding:10px 14px; 
+      font-size:13px;
+    }
+    
+    .chat-wrap { 
+      height: calc(100vh - 180px);
+      border-radius: var(--border-radius);
+    }
+    
+    .chat-body {
+      padding: 16px;
+    }
+    
+    .chat-footer {
+      padding: 12px;
+      gap: 8px;
+    }
+    
+    .voice-recording-panel {
+      bottom: 70px;
+      min-width: 280px;
+      padding: 16px;
+    }
+  }
+
+  @media (max-width: 480px){
+    .main {
+      padding: 12px;
+    }
+    
+    .topbar {
+      padding: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .hamburger {
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+    }
+    
+    .hamburger-icon {
+      width: 18px;
+      height: 12px;
+    }
+    
+    .title{
+      font-size: 16px;
+      order: 2;
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+    }
+    
+    .controls {
+      order: 3;
+      gap: 8px;
+    }
+    
+    .controls img {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .new-chat {
+      padding: 8px 12px;
+      font-size: 12px;
+      display: none; /* Hide on small mobile */
+    }
+    
+    .language-selector {
+      padding: 6px 10px;
+      font-size: 12px;
+      min-width: auto;
+    }
+    
+    .dark-toggle {
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+    
+    .cards{ 
+      gap:8px;
+      margin-top: 12px;
+    }
+    
+    .card {
+      padding: 8px 12px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+    
+    .chat-wrap{ 
+      border-radius: var(--border-radius);
+      height: calc(100vh - 160px);
+      margin-top: 12px;
+    }
+    
+    .chat-body {
+      padding: 12px;
+      gap: 8px;
+    }
+    
+    .msg {
+      max-width: 85%;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    
+    .chat-footer { 
+      padding: 10px;
+      gap: 6px;
+    }
+    
+    .chat-input {
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    
+    .send-btn {
+      padding: 10px 16px;
+      font-size: 14px;
+    }
+    
+    .voice-btn {
+      padding: 10px 12px;
+      font-size: 12px;
+      min-width: 40px;
+    }
+    
+    .voice-recording-panel {
+      bottom: 60px;
+      min-width: 260px;
+      padding: 14px;
+      border-radius: 12px;
+    }
+    
+    .recording-timer {
+      font-size: 20px;
+    }
+    
+    .recording-waveform {
+      height: 30px;
+    }
+    
+    .waveform-bar {
+      width: 3px;
+    }
+  }
+  
+  @media (max-width: 360px) {
+    .main {
+      padding: 8px;
+    }
+    
+    .topbar {
+      padding: 8px;
+    }
+    
+    .title {
+      font-size: 14px;
+    }
+    
+    .language-selector {
+      padding: 5px 8px;
+      font-size: 11px;
+    }
+    
+    .dark-toggle {
+      padding: 6px 8px;
+      font-size: 12px;
+    }
+    
+    .card {
+      padding: 6px 10px;
+      font-size: 11px;
+    }
+    
+    .chat-input {
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+    
+    .send-btn, .voice-btn {
+      padding: 8px 10px;
+      font-size: 12px;
+      min-width: 36px;
+    }
+    
+    .voice-recording-panel {
+      min-width: 240px;
+      padding: 12px;
+    }
+    
+    .recording-timer {
+      font-size: 18px;
+    }
+  }
+  
+  /* Touch device optimizations */
+  @media (hover: none) and (pointer: coarse) {
+    .card:hover {
+      transform: none;
+    }
+    
+    .msg:hover {
+      transform: none;
+    }
+    
+    .hamburger:hover {
+      transform: none;
+    }
+    
+    .new-chat:hover {
+      transform: none;
+    }
+    
+    .dark-toggle:hover {
+      transform: none;
+    }
+    
+    .send-btn:hover {
+      transform: none;
+    }
+    
+    .voice-btn:hover {
+      transform: none;
+    }
+    
+    .language-selector:hover {
+      transform: none;
+    }
+    
+    /* Active states for touch */
+    .card:active {
+      transform: scale(0.95);
+    }
+    
+    .msg:active {
+      transform: scale(0.98);
+    }
+    
+    .hamburger:active {
+      transform: scale(0.9);
+    }
+    
+    .send-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .voice-btn:active {
+      transform: scale(0.95);
+    }
+  }
+  
+  /* Landscape mobile optimizations */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .main {
+      padding: 8px;
+    }
+    
+    .topbar {
+      padding: 6px 8px;
+    }
+    
+    .cards {
+      margin-top: 8px;
+    }
+    
+    .chat-wrap {
+      height: calc(100vh - 120px);
+      margin-top: 8px;
+    }
+    
+    .chat-body {
+      padding: 8px;
+    }
+    
+    .chat-footer {
+      padding: 8px;
+    }
+    
+    .voice-recording-panel {
+      bottom: 50px;
+      padding: 10px;
+    }
+  }
+  
+  /* Small screens in portrait */
+  @media (max-height: 600px) and (orientation: portrait) {
+    .chat-wrap {
+      height: calc(100vh - 140px);
+    }
+    
+    .voice-recording-panel {
+      bottom: 50px;
+      padding: 10px;
+    }
+  }
+
+  /* small helpers */
+  .muted{ color:var(--muted); font-size:13px }
+  .session-meta{ display:block; font-size:12px; color:var(--muted) }
+  .empty-note{ padding:26px; text-align:center; color:var(--muted) }
+</style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="top">
+      <h3>Chat History</h3>
+      <button class="close-btn" id="closeSidebarBtn" title="Close sidebar">✕</button>
+    </div>
+    <div class="note">Sessions in this sidebar are stored only for this browser tab. They disappear when you close the tab/window.</div>
+
+    <div class="history-list" id="historyList">
+      <!-- session items injected here -->
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button id="clearSessions" style="flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;background:rgba(255,255,255,0.12);color:#fff">
+        Clear sessions
+      </button>
+    </div>
+
+    <div class="foot" style="margin-top:14px;font-size:13px;color:rgba(255,255,255,0.95)">
+      Tip: click any session to restore that chat.
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+    <div class="topbar">
+      <button class="hamburger" id="openSidebarBtn" aria-label="Open sidebar">
+        <div class="hamburger-icon">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+      <div class="title">CHUITECHMA Chatbot</div>
+
+      <div class="controls">
+        <img src="nn-removebg-preview.png" alt="chuitechma logo" width="50" height="50">
+        <button class="new-chat" id="newChatBtn">+ New Chat</button>
+        <select class="language-selector" id="languageSelector">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="es">Español</option>
+          <option value="zh">中文</option>
+        </select>
+        <button class="dark-toggle" id="darkToggle" title="Toggle dark mode">🌙</button>
+      </div>
+    </div>
+
+    <!-- suggestion cards -->
+    <div class="cards" id="cards">
+      <div class="card" data-q="Admission process and requirements">Admissions</div>
+      <div class="card" data-q="School fees for different programs">Fees</div>
+      <div class="card" data-q="List of departments and programs offered">Departments</div>
+      <div class="card" data-q="CHUITECHMA university history">History</div>
+      <div class="card" data-q="Campus rules, schedules and contact">Campus info</div>
+    </div>
+
+    <!-- Chat area -->
+    <div class="chat-wrap" aria-live="polite">
+      <div class="chat-body" id="chatBody">
+        <!-- messages injected here -->
+      </div>
+
+      <div class="chat-footer">
+        <input id="inputBox" class="chat-input" placeholder="Type your message..." aria-label="Message input">
+        <button id="voiceBtn" class="voice-btn" title="Voice input">🎤</button>
+        <button id="sendBtn" class="send-btn">Send</button>
+        
+        <!-- Voice Recording Panel -->
+        <div id="voiceRecordingPanel" class="voice-recording-panel">
+          <div class="recording-timer" id="recordingTimer">00:00</div>
+          <div class="recording-waveform">
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+          </div>
+          <div class="recording-controls">
+            <button id="cancelRecordingBtn" class="recording-btn cancel-recording-btn">Cancel</button>
+            <button id="sendVoiceBtn" class="recording-btn send-voice-btn">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<script>
+/* ========= Localization System ========= */
+const translations = {
+  en: {
+    title: 'CHUITECHMA Chatbot',
+    newChat: '+ New Chat',
+    chatHistory: 'Chat History',
+    typeMessage: 'Type your message...',
+    send: 'Send',
+    voiceInput: 'Voice input',
+    admissions: 'Admissions',
+    fees: 'Fees',
+    departments: 'Departments',
+    history: 'History',
+    campusInfo: 'Campus info',
+    emptyNote: 'Say hi! Ask anything about CHUITECHMA — admissions, fees, departments, results, campus life...',
+    noSessions: 'No saved sessions in this tab. Your current session will remain until you close this tab.',
+    clearSessions: 'Clear sessions',
+    tip: 'Tip: click any session to restore that chat.',
+    voiceNotSupported: 'Voice input is not supported in your browser',
+    voiceError: 'Voice input error. Please try again.',
+    voiceListening: 'Listening...'
+  },
+  fr: {
+    title: 'Chatbot CHITECHMA',
+    newChat: '+ Nouveau Chat',
+    chatHistory: 'Historique des Chats',
+    typeMessage: 'Tapez votre message...',
+    send: 'Envoyer',
+    voiceInput: 'Entrée vocale',
+    admissions: 'Admissions',
+    fees: 'Frais',
+    departments: 'Départements',
+    history: 'Histoire',
+    campusInfo: 'Info campus',
+    emptyNote: 'Dites bonjour! Demandez quoi que ce soit sur CHUITECHMA — admissions, frais, départements, résultats, vie campus...',
+    noSessions: 'Aucune session enregistrée dans cet onglet. Votre session actuelle restera jusqu\'à ce que vous fermiez cet onglet.',
+    clearSessions: 'Effacer les sessions',
+    tip: 'Astuce: cliquez sur une session pour restaurer ce chat.',
+    voiceNotSupported: 'L\'entrée vocale n\'est pas supportée par votre navigateur',
+    voiceError: 'Erreur d\'entrée vocale. Veuillez réessayer.',
+    voiceListening: 'Écoute...'
+  },
+  es: {
+    title: 'Chatbot CHITECHMA',
+    newChat: '+ Nuevo Chat',
+    chatHistory: 'Historial de Chats',
+    typeMessage: 'Escribe tu mensaje...',
+    send: 'Enviar',
+    voiceInput: 'Entrada de voz',
+    admissions: 'Admisiones',
+    fees: 'Tarifas',
+    departments: 'Departamentos',
+    history: 'Historia',
+    campusInfo: 'Info campus',
+    emptyNote: '¡Di hola! Pregunta cualquier cosa sobre CHUITECHMA — admisiones, tarifas, departamentos, resultados, vida campus...',
+    noSessions: 'No hay sesiones guardadas en esta pestaña. Tu sesión actual permanecerá hasta que cierres esta pestaña.',
+    clearSessions: 'Limpiar sesiones',
+    tip: 'Consejo: haz clic en cualquier sesión para restaurar ese chat.',
+    voiceNotSupported: 'La entrada de voz no es compatible con tu navegador',
+    voiceError: 'Error de entrada de voz. Por favor inténtalo de nuevo.',
+    voiceListening: 'Escuchando...'
+  },
+  zh: {
+    title: 'CHUITECHMA 聊天机器人',
+    newChat: '+ 新聊天',
+    chatHistory: '聊天历史',
+    typeMessage: '输入您的消息...',
+    send: '发送',
+    voiceInput: '语音输入',
+    admissions: '招生',
+    fees: '费用',
+    departments: '部门',
+    history: '历史',
+    campusInfo: '校园信息',
+    emptyNote: '打个招呼！询问任何关于CHUITECHMA的问题——招生、费用、部门、成绩、校园生活...',
+    noSessions: '此标签页中没有保存的会话。您当前的会话将保留直到您关闭此标签页。',
+    clearSessions: '清除会话',
+    tip: '提示：点击任何会话以恢复该聊天。',
+    voiceNotSupported: '您的浏览器不支持语音输入',
+    voiceError: '语音输入错误。请再试一次。',
+    voiceListening: '正在听...'
+  }
+};
+
+let currentLanguage = 'en';
+
+function setLanguage(lang) {
+  currentLanguage = lang;
+  localStorage.setItem('chuitechma_language', lang);
+  updateUIText();
+  updateBotResponses();
+}
+
+function updateUIText() {
+  const t = translations[currentLanguage];
+  if (!t) return;
+  
+  qs('.title').textContent = t.title;
+  qs('#newChatBtn').textContent = t.newChat;
+  qs('#inputBox').placeholder = t.typeMessage;
+  qs('#sendBtn').textContent = t.send;
+  qs('#voiceBtn').title = t.voiceInput;
+  
+  // Update cards
+  const cards = qsa('.card');
+  if (cards[0]) cards[0].textContent = t.admissions;
+  if (cards[1]) cards[1].textContent = t.fees;
+  if (cards[2]) cards[2].textContent = t.departments;
+  if (cards[3]) cards[3].textContent = t.history;
+  if (cards[4]) cards[4].textContent = t.campusInfo;
+  
+  // Update sidebar
+  qs('aside h3').textContent = t.chatHistory;
+  qs('#clearSessions').textContent = t.clearSessions;
+  qs('.foot').textContent = t.tip;
+}
+
+/* ========= Voice Recognition (WhatsApp Style) ========= */
+let recognition = null;
+let isRecording = false;
+let recordingStartTime = null;
+let recordingInterval = null;
+let recordedText = '';
+let highlightedMessage = null;
+
+function initVoiceRecognition() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    console.warn('Speech recognition not supported');
+    qs('#voiceBtn').classList.add('disabled');
+    qs('#voiceBtn').title = translations[currentLanguage].voiceNotSupported;
+    return;
+  }
+  
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = currentLanguage === 'zh' ? 'zh-CN' : currentLanguage;
+  
+  recognition.onstart = () => {
+    isRecording = true;
+    recordingStartTime = Date.now();
+    startRecordingTimer();
+    qs('#voiceBtn').classList.add('recording');
+    qs('#voiceRecordingPanel').classList.add('active');
+    qs('#voiceBtn').title = translations[currentLanguage].voiceListening;
+  };
+  
+  recognition.onresult = (event) => {
+    let finalTranscript = '';
+    let interimTranscript = '';
+    
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        finalTranscript += transcript;
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+    
+    recordedText = finalTranscript;
+    // Show interim text in input for visual feedback
+    qs('#inputBox').value = finalTranscript + interimTranscript;
+  };
+  
+  recognition.onerror = (event) => {
+    console.error('Speech recognition error:', event.error);
+    if (event.error === 'no-speech') {
+      // Continue recording, don't stop
+      return;
+    }
+    alert(translations[currentLanguage].voiceError);
+    stopVoiceRecording(false);
+  };
+  
+  recognition.onend = () => {
+    // Only stop if user hasn't manually stopped
+    if (isRecording) {
+      // Restart recognition to continue recording
+      try {
+        recognition.start();
+      } catch (e) {
+        // If restart fails, stop recording
+        stopVoiceRecording(true);
+      }
+    }
+  };
+}
+
+function startVoiceRecording() {
+  if (!recognition) return;
+  recordedText = '';
+  recognition.start();
+}
+
+function stopVoiceRecording(keepRecording = true) {
+  if (!recognition || !isRecording) return;
+  
+  isRecording = false;
+  recognition.stop();
+  stopRecordingTimer();
+  
+  qs('#voiceBtn').classList.remove('recording');
+  qs('#voiceRecordingPanel').classList.remove('active');
+  qs('#voiceBtn').title = translations[currentLanguage].voiceInput;
+  
+  if (keepRecording && recordedText.trim()) {
+    qs('#inputBox').value = recordedText;
+  }
+}
+
+function cancelVoiceRecording() {
+  stopVoiceRecording(false);
+  qs('#inputBox').value = '';
+  recordedText = '';
+}
+
+function sendVoiceMessage() {
+  if (recordedText.trim()) {
+    sendUserMessage(recordedText.trim());
+    qs('#inputBox').value = '';
+    recordedText = '';
+  }
+  stopVoiceRecording(false);
+}
+
+function startRecordingTimer() {
+  let seconds = 0;
+  recordingInterval = setInterval(() => {
+    seconds++;
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    qs('#recordingTimer').textContent = 
+      `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }, 1000);
+}
+
+function stopRecordingTimer() {
+  if (recordingInterval) {
+    clearInterval(recordingInterval);
+    recordingInterval = null;
+  }
+  qs('#recordingTimer').textContent = '00:00';
+}
+
+/* ========= Message Highlighting and Voice Reading ========= */
+function highlightMessage(messageElement) {
+  // Remove previous highlight
+  if (highlightedMessage) {
+    highlightedMessage.classList.remove('highlighted');
+    const indicator = highlightedMessage.querySelector('.voice-reading-indicator');
+    if (indicator) indicator.classList.remove('active');
+  }
+  
+  // Add new highlight
+  highlightedMessage = messageElement;
+  messageElement.classList.add('highlighted');
+  
+  // Add voice reading indicator if not exists
+  if (!messageElement.querySelector('.voice-reading-indicator')) {
+    const indicator = document.createElement('div');
+    indicator.className = 'voice-reading-indicator';
+    indicator.innerHTML = '🔊';
+    messageElement.appendChild(indicator);
+  }
+}
+
+function readHighlightedMessage() {
+  if (!highlightedMessage) return;
+  
+  const text = highlightedMessage.textContent.trim();
+  if (text) {
+    const indicator = highlightedMessage.querySelector('.voice-reading-indicator');
+    if (indicator) indicator.classList.add('active');
+    
+    speakText(text, () => {
+      if (indicator) indicator.classList.remove('active');
+    });
+  }
+}
+
+function toggleMessageHighlight(messageElement) {
+  if (highlightedMessage === messageElement) {
+    // If same message, read it aloud
+    readHighlightedMessage();
+  } else {
+    // Different message, highlight it
+    highlightMessage(messageElement);
+  }
+}
+
+/* ========= Text-to-Speech ========= */
+function speakText(text, callback) {
+  if (!('speechSynthesis' in window)) {
+    if (callback) callback();
+    return;
+  }
+  
+  // Cancel any ongoing speech
+  window.speechSynthesis.cancel();
+  
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = currentLanguage === 'zh' ? 'zh-CN' : currentLanguage;
+  utterance.rate = 0.9;
+  utterance.pitch = 1;
+  utterance.volume = 0.8;
+  
+  if (callback) {
+    utterance.onend = callback;
+  }
+  
+  window.speechSynthesis.speak(utterance);
+}
+
+/* ========= Session storage keys ========= */
+const SESSIONS_KEY = 'chuitechma_sessions';    // array of saved sessions (each session: {id, title, ts, messages})
+const CURRENT_KEY = 'chuitechma_current';      // current session object
+
+/* ========= Utility ========= */
+const el = id => document.getElementById(id);
+const qs = (sel, ctx=document) => ctx.querySelector(sel);
+const qsa = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+
+/* ========= DOM ========= */
+const sidebar = el('sidebar');
+const openSidebarBtn = el('openSidebarBtn');
+const closeSidebarBtn = el('closeSidebarBtn');
+const historyList = el('historyList');
+const clearSessionsBtn = el('clearSessions');
+const cardsWrap = el('cards');
+const chatBody = el('chatBody');
+const inputBox = el('inputBox');
+const sendBtn = el('sendBtn');
+const voiceBtn = el('voiceBtn');
+const newChatBtn = el('newChatBtn');
+const darkToggle = el('darkToggle');
+const languageSelector = el('languageSelector');
+const voiceRecordingPanel = el('voiceRecordingPanel');
+const cancelRecordingBtn = el('cancelRecordingBtn');
+const sendVoiceBtn = el('sendVoiceBtn');
+const recordingTimerDisplay = el('recordingTimer');
+
+/* ========= Initialize ========= */
+let sessions = []; // array of previous sessions
+let current = null; // { id, title, ts, messages: [{sender:'user'|'bot', text, ts}] }
+
+function uid() { return 's_' + Date.now() + '_' + Math.floor(Math.random()*9999); }
+
+function loadFromStorage(){
+  try {
+    const s = sessionStorage.getItem(SESSIONS_KEY);
+    sessions = s ? JSON.parse(s) : [];
+  } catch(e){ sessions = []; }
+  try {
+    const c = sessionStorage.getItem(CURRENT_KEY);
+    current = c ? JSON.parse(c) : null;
+  } catch(e){ current = null; }
+}
+
+function saveToStorage(){
+  sessionStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+  sessionStorage.setItem(CURRENT_KEY, JSON.stringify(current));
+}
+
+/* If no current session, create one automatically */
+function ensureCurrent(){
+  if(!current){
+    current = { id: uid(), title: 'New chat', ts: Date.now(), messages: [] };
+    saveToStorage();
+  }
+}
+
+/* ========= UI Rendering ========= */
+function renderSessionsList(){
+  historyList.innerHTML = '';
+  if(sessions.length === 0){
+    const n = document.createElement('div');
+    n.className = 'empty-note';
+    n.textContent = 'No saved sessions in this tab. Your current session will remain until you close this tab.';
+    historyList.appendChild(n);
+    return;
+  }
+  sessions.slice().reverse().forEach(sess => {
+    const item = document.createElement('div');
+    item.className = 'session-item';
+    item.dataset.id = sess.id;
+
+    const left = document.createElement('div');
+    left.className = 's-left';
+    left.innerHTML = `<strong>${sess.title || 'Chat'}</strong><small>${new Date(sess.ts).toLocaleString()}</small>`;
+
+    const right = document.createElement('div');
+    right.style.display = 'flex';
+    right.style.alignItems = 'center';
+    right.style.gap = '8px';
+
+    const loadBtn = document.createElement('button');
+    loadBtn.className = 'session-load';
+    loadBtn.style.background='transparent'; loadBtn.style.border='none'; loadBtn.style.color='#fff';
+    loadBtn.style.cursor='pointer';
+    loadBtn.textContent = 'Open';
+    loadBtn.onclick = e => { e.stopPropagation(); loadSession(sess.id); sidebar.classList.remove('show'); };
+
+    const del = document.createElement('button');
+    del.className = 'session-delete';
+    del.title = 'Delete session';
+    del.innerHTML = '🗑';
+    del.onclick = e => { e.stopPropagation(); deleteSession(sess.id); };
+
+    right.appendChild(loadBtn);
+    right.appendChild(del);
+
+    item.appendChild(left);
+    item.appendChild(right);
+    item.onclick = () => { 
+      loadSession(sess.id); 
+    };
+
+    historyList.appendChild(item);
+  });
+}
+
+function renderMessages(){
+  // Debug: Log the render state
+  console.log('Rendering messages...');
+  console.log('Current session:', current);
+  console.log('Chat body element:', chatBody);
+  
+  chatBody.innerHTML = '';
+  if(!current || !current.messages.length){
+    console.log('No messages to display, showing empty note');
+    const empty = document.createElement('div');
+    empty.className = 'empty-note';
+    empty.textContent = translations[currentLanguage].emptyNote || 'Say hi! Ask anything about CHUITECHMA — admissions, fees, departments, results, campus life...';
+    chatBody.appendChild(empty);
+    return;
+  }
+  
+  console.log('Rendering', current.messages.length, 'messages');
+  current.messages.forEach(m => {
+    const d = document.createElement('div');
+    d.className = 'msg ' + (m.sender === 'user' ? 'user' : 'bot');
+    d.textContent = m.text;
+    d.addEventListener('click', () => toggleMessageHighlight(d));
+    chatBody.appendChild(d);
+    console.log('Added message:', m);
+  });
+  chatBody.scrollTop = chatBody.scrollHeight;
+  console.log('Messages rendered, chat body children:', chatBody.children.length);
+}
+
+/* ========= Session operations ========= */
+function pushMessage(sender, text){
+  // Ensure we have a current session
+  if (!current) {
+    console.error('No current session in pushMessage!');
+    ensureCurrent();
+  }
+  
+  // Debug: Log the push operation
+  console.log('Pushing message:', { sender, text });
+  console.log('Current session before push:', current);
+  
+  const msg = { sender, text, ts: Date.now() };
+  current.messages.push(msg);
+  
+  // Debug: Log after push
+  console.log('Current session after push:', current);
+  console.log('Messages array:', current.messages);
+  
+  // update title (first user message or truncated)
+  if(sender === 'user'){
+    current.title = text.length > 30 ? text.slice(0,30) + '...' : text;
+  }
+  current.ts = Date.now();
+  saveToStorage();
+  renderMessages();
+  renderSessionsList();
+}
+
+/* Save current session into sessions[] and start a new current */
+function startNewChat(){
+  if(current && current.messages && current.messages.length){
+    sessions.push(current);
+  }
+  current = { id: uid(), title: 'New chat', ts: Date.now(), messages: [] };
+  saveToStorage();
+  showCards();
+  renderMessages();
+  renderSessionsList();
+}
+
+/* Load a saved session by id (moves it to "current" without removing from sessions for simplicity) */
+function loadSession(id){
+  const idx = sessions.findIndex(s => s.id === id);
+  if(idx === -1) return;
+  // move currently active into sessions (if any)
+  if(current && current.messages && current.messages.length){
+    // push current into sessions
+    sessions.push(current);
+  }
+  // set the selected one as current
+  const picked = sessions.splice(idx,1)[0];
+  current = picked;
+  saveToStorage();
+  renderMessages();
+  renderSessionsList();
+  hideCards();
+  // Close sidebar when loading a session
+  sidebar.classList.remove('show');
+  openSidebarBtn.classList.remove('active');
+}
+
+/* Delete session by id */
+function deleteSession(id){
+  sessions = sessions.filter(s => s.id !== id);
+  saveToStorage();
+  renderSessionsList();
+}
+
+/* Clear all saved sessions (but not current) */
+clearSessionsBtn.addEventListener('click', () => {
+  if(!confirm('Clear saved sessions for this tab?')) return;
+  sessions = [];
+  saveToStorage();
+  renderSessionsList();
+});
+
+/* ========= Cards behavior ========= */
+function hideCards(){
+  cardsWrap.classList.add('hide');
+}
+function showCards(){
+  cardsWrap.classList.remove('hide');
+}
+
+/* ========= Sidebar open/close ========= */
+openSidebarBtn.addEventListener('click', () => {
+  sidebar.classList.add('show');
+  openSidebarBtn.classList.add('active');
+});
+
+closeSidebarBtn.addEventListener('click', () => {
+  sidebar.classList.remove('show');
+  openSidebarBtn.classList.remove('active');
+});
+
+/* Close sidebar when clicking outside on small screens */
+document.addEventListener('click', (e) => {
+  const insideSidebar = e.target.closest('.sidebar');
+  const isOpen = sidebar.classList.contains('show');
+  const clickedOpenBtn = e.target.closest('#openSidebarBtn');
+  if(isOpen && !insideSidebar && !clickedOpenBtn && window.innerWidth < 840){
+    sidebar.classList.remove('show');
+    openSidebarBtn.classList.remove('active');
+  }
+});
+
+/* Add keyboard support for hamburger menu */
+openSidebarBtn.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    if(sidebar.classList.contains('show')) {
+      sidebar.classList.remove('show');
+      openSidebarBtn.classList.remove('active');
+    } else {
+      sidebar.classList.add('show');
+      openSidebarBtn.classList.add('active');
+    }
+  }
+});
+
+/* Close sidebar with Escape key */
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && sidebar.classList.contains('show')) {
+    sidebar.classList.remove('show');
+    openSidebarBtn.classList.remove('active');
+  }
+});
+
+/* ========= Typing/loading animation ========= */
+function showTyping(){
+  const typing = document.createElement('div');
+  typing.className = 'msg bot typing-wrapper';
+  typing.id = 'typingIndicator';
+  typing.innerHTML = '<span class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>';
+  chatBody.appendChild(typing);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+function hideTyping(){
+  const t = document.getElementById('typingIndicator');
+  if(t) t.remove();
+}
+
+/* ========= Simple bot reply logic (replace with actual AI backend later) ========= */
+const botResponses = {
+  en: {
+    fees: "Fees depend on program and level. Please tell me your program (HND, Degree, Master's) and department to get an estimated fee range.",
+    admission: "Admissions: CHUITECHMA accepts applications per intake. You usually need academic transcripts, ID, and relevant certificates. Ask about a specific program for details.",
+    departments: "CHUITECHMA offers departments such as Civil Engineering, Computer Engineering, Nursing, Midwifery, Medical Laboratory, Law, Business, ICT and more. Which department interests you?",
+    history: "CHUITECHMA was founded to provide practical, industry-oriented technical and professional education in Cameroon. It focuses on hands-on training and professional skills.",
+    logo: "Logo idea: A modern shield + torch icon with green tones and the school name in a strong, clean font. I can generate more concepts if you want.",
+    fallback: "Thanks — I got your message. (This demo uses canned replies; connect to a backend AI for dynamic answers.)"
+  },
+  fr: {
+    fees: "Les frais dépendent du programme et du niveau. Veuillez me indiquer votre programme (HND, Licence, Master) et votre département pour obtenir une estimation des frais.",
+    admission: "Admissions: CHUITECHMA accepte les candidatures par session. Vous avez généralement besoin de relevés académiques, d'une carte d'identité et de certificats pertinents. Demandez des détails sur un programme spécifique.",
+    departments: "CHUITECHMA propose des départements tels que Génie Civil, Informatique, Sciences Infirmières, Sage-femme, Laboratoire Médical, Droit, Commerce, TIC et plus. Quel département vous intéresse?",
+    history: "CHUITECHMA a été fondée pour fournir une éducation technique et professionnelle pratique et orientée vers l'industrie au Cameroun. Elle se concentre sur la formation pratique et les compétences professionnelles.",
+    logo: "Idée de logo: Un bouclier moderne + icône torche avec des tons verts et le nom de l'école dans une police forte et claire. Je peux générer plus de concepts si vous le souhaitez.",
+    fallback: "Merci — j'ai reçu votre message. (Cette démo utilise des réponses préparées; connectez-vous à une IA backend pour des réponses dynamiques.)"
+  },
+  es: {
+    fees: "Las tarifas dependen del programa y nivel. Por favor dime tu programa (HND, Grado, Maestría) y departamento para obtener un rango estimado de tarifas.",
+    admission: "Admisiones: CHUITECHMA acepta solicitudes por intake. Generalmente necesitas transcripciones académicas, ID y certificados relevantes. Pregunta sobre un programa específico para detalles.",
+    departments: "CHUITECHMA ofrece departamentos como Ingeniería Civil, Ingeniería Informática, Enfermería, Partería, Laboratorio Médico, Derecho, Negocios, TIC y más. ¿Qué departamento te interesa?",
+    history: "CHUITECHMA fue fundada para proporcionar educación técnica y profesional práctica e orientada a la industria en Camerún. Se enfoca en entrenamiento práctico y habilidades profesionales.",
+    logo: "Idea de logo: Un escudo moderno + ícono de antorcha con tonos verdes y el nombre de la escuela en una fuente fuerte y limpia. Puedo generar más conceptos si quieres.",
+    fallback: "Gracias — recibí tu mensaje. (Esta demo usa respuestas predefinidas; conéctate a una IA backend para respuestas dinámicas.)"
+  },
+  zh: {
+    fees: "费用取决于课程和级别。请告诉我您的课程（HND、学位、硕士）和部门以获得估算的费用范围。",
+    admission: "招生：CHUITECHMA按批次接受申请。您通常需要学术成绩单、身份证和相关证书。询问特定课程的详细信息。",
+    departments: "CHUITECHMA提供土木工程、计算机工程、护理、助产、医学检验、法律、商业、信息技术等部门。您对哪个部门感兴趣？",
+    history: "CHUITECHMA成立是为了在喀麦隆提供实用、行业导向的技术和专业教育。它专注于实践培训和专业技能。",
+    logo: "标志想法：带有绿色调的现代盾牌+火炬图标，学校名称采用强劲清晰的字体。如果您想要，我可以生成更多概念。",
+    fallback: "谢谢——我收到了您的消息。（此演示使用预制回复；连接到后端AI以获得动态答案。）"
+  }
+};
+
+function generateBotReply(userText){
+  const normalized = userText.toLowerCase();
+  const responses = botResponses[currentLanguage] || botResponses.en;
+
+  if(normalized.includes('fee') || normalized.includes('fees') || normalized.includes('how much') || normalized.includes('coût') || normalized.includes('coûts') || normalized.includes('tarifa') || normalized.includes('tarifas') || normalized.includes('费用') || normalized.includes('多少钱')){
+    return responses.fees;
+  }
+  if(normalized.includes('admission') || normalized.includes('admit') || normalized.includes('admission') || normalized.includes('admettre') || normalized.includes('admision') || normalized.includes('admitir') || normalized.includes('招生') || normalized.includes('录取')){
+    return responses.admission;
+  }
+  if(normalized.includes('department') || normalized.includes('departments') || normalized.includes('program') || normalized.includes('département') || normalized.includes('départements') || normalized.includes('programme') || normalized.includes('departamento') || normalized.includes('departamentos') || normalized.includes('programa') || normalized.includes('部门') || normalized.includes('系') || normalized.includes('课程')){
+    return responses.departments;
+  }
+  if(normalized.includes('history') || normalized.includes('found') || normalized.includes('histoire') || normalized.includes('fondé') || normalized.includes('historia') || normalized.includes('fundado') || normalized.includes('历史') || normalized.includes('成立')){
+    return responses.history;
+  }
+  if(normalized.includes('logo')){
+    return responses.logo;
+  }
+  return responses.fallback;
+}
+
+/* ========= Send message flow ========= */
+function sendUserMessage(text){
+  if(!text) return;
+  
+  // Ensure we have a current session
+  ensureCurrent();
+  
+  // Debug: Log the message being sent
+  console.log('Sending message:', text);
+  console.log('Current session before:', current);
+  
+  pushMessage('user', text);
+  hideCards();
+  // show typing indicator
+  showTyping();
+
+  // mimic network / AI latency
+  setTimeout(() => {
+    hideTyping();
+    const botReply = generateBotReply(text);
+    console.log('Bot reply:', botReply);
+    pushMessage('bot', botReply);
+    // Speak the bot response
+    speakText(botReply);
+  }, 900 + Math.random()*900);
+}
+
+/* ========= Event listeners ========= */
+sendBtn.addEventListener('click', () => {
+  const text = inputBox.value.trim();
+  if(!text) return;
+  sendUserMessage(text);
+  inputBox.value = '';
+  inputBox.focus();
+});
+
+// Click-to-record voice recording
+voiceBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  if (isRecording) {
+    stopVoiceRecording(true);
+  } else {
+    startVoiceRecording();
+  }
+});
+
+// Voice recording panel controls
+cancelRecordingBtn.addEventListener('click', () => {
+  cancelVoiceRecording();
+});
+
+sendVoiceBtn.addEventListener('click', () => {
+  sendVoiceMessage();
+});
+
+// Language selector event listener
+languageSelector.addEventListener('change', (e) => {
+  setLanguage(e.target.value);
+  // Reinitialize voice recognition with new language
+  if (recognition) {
+    recognition.lang = currentLanguage === 'zh' ? 'zh-CN' : currentLanguage;
+  }
+});
+
+inputBox.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendBtn.click();
+  }
+});
+
+cardsWrap.addEventListener('click', (e) => {
+  const c = e.target.closest('.card');
+  if(!c) return;
+  const q = c.dataset.q || c.textContent;
+  sendUserMessage(q);
+  // hide all top cards
+  hideCards();
+});
+
+/* New chat button */
+newChatBtn.addEventListener('click', () => {
+  startNewChat();
+});
+
+/* Dark mode toggle (persisted across reloads in localStorage) */
+function setDarkMode(on){
+  if(on) document.body.classList.add('dark');
+  else document.body.classList.remove('dark');
+  localStorage.setItem('chuitechma_dark', on ? '1' : '0');
+}
+darkToggle.addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('chuitechma_dark', isDark ? '1' : '0');
+});
+
+/* ========= Load initial state ========= */
+(function init(){
+  // restore language preference
+  const savedLang = localStorage.getItem('chuitechma_language');
+  if (savedLang) {
+    currentLanguage = savedLang;
+    languageSelector.value = savedLang;
+  }
+  
+  // restore dark mode preference
+  const dl = localStorage.getItem('chuitechma_dark');
+  if(dl === '1') document.body.classList.add('dark');
+
+  loadFromStorage();
+  ensureCurrent();
+  renderSessionsList();
+  renderMessages();
+  
+  // Initialize voice recognition
+  initVoiceRecognition();
+  
+  // Update UI text based on current language
+  updateUIText();
+  
+  // if we already have messages, hide cards (session resumed)
+  if(current && current.messages && current.messages.length) hideCards();
+})();
+
+/* ========= Save current session before unload? ========= */
+/* sessionStorage persists across reloads but is cleared when tab/window closed. No extra action required.
+   However, update sessionStorage periodically in case of changes (we already call saveToStorage on actions).
+*/
+
+/* ========= Optional: expose for debugging ========= */
+window._chitech = { sessions, current, saveToStorage, loadFromStorage };
+
+</script>
+</body>
+</html>
