@@ -442,6 +442,31 @@
   .msg { max-width:75%; padding:10px 12px; border-radius:12px; line-height:1.35; }
   .msg.user { align-self:flex-end; background:var(--user-bg); color:var(--text) }
   .msg.bot { align-self:flex-start; background:var(--bot-bg); color:var(--text) }
+  
+  /* Formatted text styles */
+  .msg strong {
+    font-weight: 600;
+    color: var(--primary);
+  }
+  
+  .msg em {
+    font-style: italic;
+    color: var(--text-secondary);
+  }
+  
+  .msg ul, .msg ol {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+  
+  .msg li {
+    margin: 4px 0;
+    line-height: 1.4;
+  }
+  
+  .msg br {
+    line-height: 1.6;
+  }
 
   .typing {
     display:inline-flex;
@@ -1213,6 +1238,7 @@
     </div>
   </main>
 
+<script src="gemini-service.js"></script>
 <script>
 /* ========= Localization System ========= */
 const translations = {
@@ -1657,7 +1683,14 @@ function renderMessages(){
   current.messages.forEach(m => {
     const d = document.createElement('div');
     d.className = 'msg ' + (m.sender === 'user' ? 'user' : 'bot');
-    d.textContent = m.text;
+    
+    // Use formatted HTML for bot messages, plain text for user messages
+    if (m.sender === 'bot') {
+      d.innerHTML = formatMessageText(m.text);
+    } else {
+      d.textContent = m.text;
+    }
+    
     d.addEventListener('click', () => toggleMessageHighlight(d));
     chatBody.appendChild(d);
     console.log('Added message:', m);
@@ -1795,6 +1828,30 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+/* ========= Message Formatting ========= */
+function formatMessageText(text) {
+  // Convert markdown-style formatting to HTML
+  let formattedText = text;
+  
+  // Convert **bold** to <strong>
+  formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  
+  // Convert *italic* to <em>
+  formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  
+  // Handle line breaks
+  formattedText = formattedText.replace(/\n/g, '<br>');
+  
+  // Handle bullet points
+  formattedText = formattedText.replace(/^• (.+)$/gm, '<li>$1</li>');
+  formattedText = formattedText.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+  
+  // Handle numbered lists
+  formattedText = formattedText.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  
+  return formattedText;
+}
+
 /* ========= Typing/loading animation ========= */
 function showTyping(){
   const typing = document.createElement('div');
@@ -1809,62 +1866,59 @@ function hideTyping(){
   if(t) t.remove();
 }
 
-/* ========= Simple bot reply logic (replace with actual AI backend later) ========= */
-const botResponses = {
-  en: {
-    fees: "Fees depend on program and level. Please tell me your program (HND, Degree, Master's) and department to get an estimated fee range.",
-    admission: "Admissions: CHUITECHMA accepts applications per intake. You usually need academic transcripts, ID, and relevant certificates. Ask about a specific program for details.",
-    departments: "CHUITECHMA offers departments such as Civil Engineering, Computer Engineering, Nursing, Midwifery, Medical Laboratory, Law, Business, ICT and more. Which department interests you?",
-    history: "CHUITECHMA was founded to provide practical, industry-oriented technical and professional education in Cameroon. It focuses on hands-on training and professional skills.",
-    logo: "Logo idea: A modern shield + torch icon with green tones and the school name in a strong, clean font. I can generate more concepts if you want.",
-    fallback: "Thanks — I got your message. (This demo uses canned replies; connect to a backend AI for dynamic answers.)"
-  },
-  fr: {
-    fees: "Les frais dépendent du programme et du niveau. Veuillez me indiquer votre programme (HND, Licence, Master) et votre département pour obtenir une estimation des frais.",
-    admission: "Admissions: CHUITECHMA accepte les candidatures par session. Vous avez généralement besoin de relevés académiques, d'une carte d'identité et de certificats pertinents. Demandez des détails sur un programme spécifique.",
-    departments: "CHUITECHMA propose des départements tels que Génie Civil, Informatique, Sciences Infirmières, Sage-femme, Laboratoire Médical, Droit, Commerce, TIC et plus. Quel département vous intéresse?",
-    history: "CHUITECHMA a été fondée pour fournir une éducation technique et professionnelle pratique et orientée vers l'industrie au Cameroun. Elle se concentre sur la formation pratique et les compétences professionnelles.",
-    logo: "Idée de logo: Un bouclier moderne + icône torche avec des tons verts et le nom de l'école dans une police forte et claire. Je peux générer plus de concepts si vous le souhaitez.",
-    fallback: "Merci — j'ai reçu votre message. (Cette démo utilise des réponses préparées; connectez-vous à une IA backend pour des réponses dynamiques.)"
-  },
-  es: {
-    fees: "Las tarifas dependen del programa y nivel. Por favor dime tu programa (HND, Grado, Maestría) y departamento para obtener un rango estimado de tarifas.",
-    admission: "Admisiones: CHUITECHMA acepta solicitudes por intake. Generalmente necesitas transcripciones académicas, ID y certificados relevantes. Pregunta sobre un programa específico para detalles.",
-    departments: "CHUITECHMA ofrece departamentos como Ingeniería Civil, Ingeniería Informática, Enfermería, Partería, Laboratorio Médico, Derecho, Negocios, TIC y más. ¿Qué departamento te interesa?",
-    history: "CHUITECHMA fue fundada para proporcionar educación técnica y profesional práctica e orientada a la industria en Camerún. Se enfoca en entrenamiento práctico y habilidades profesionales.",
-    logo: "Idea de logo: Un escudo moderno + ícono de antorcha con tonos verdes y el nombre de la escuela en una fuente fuerte y limpia. Puedo generar más conceptos si quieres.",
-    fallback: "Gracias — recibí tu mensaje. (Esta demo usa respuestas predefinidas; conéctate a una IA backend para respuestas dinámicas.)"
-  },
-  zh: {
-    fees: "费用取决于课程和级别。请告诉我您的课程（HND、学位、硕士）和部门以获得估算的费用范围。",
-    admission: "招生：CHUITECHMA按批次接受申请。您通常需要学术成绩单、身份证和相关证书。询问特定课程的详细信息。",
-    departments: "CHUITECHMA提供土木工程、计算机工程、护理、助产、医学检验、法律、商业、信息技术等部门。您对哪个部门感兴趣？",
-    history: "CHUITECHMA成立是为了在喀麦隆提供实用、行业导向的技术和专业教育。它专注于实践培训和专业技能。",
-    logo: "标志想法：带有绿色调的现代盾牌+火炬图标，学校名称采用强劲清晰的字体。如果您想要，我可以生成更多概念。",
-    fallback: "谢谢——我收到了您的消息。（此演示使用预制回复；连接到后端AI以获得动态答案。）"
+// Initialize Gemini Service
+let gptService;
+
+function initializeGPTService() {
+  console.log('Initializing Gemini Service...');
+  gptService = new GeminiService();
+  
+  if (!gptService.apiKey) {
+    console.error('Gemini Service initialization failed - no API key');
+    return false;
   }
-};
+  
+  console.log('Gemini Service initialized successfully');
+  console.log('Service config:', gptService.getConfig());
+  console.log('API Key present:', gptService.apiKey ? 'YES' : 'NO');
+  return true;
+}
+
+// Enhanced bot reply function using Gemini service
+async function getBotResponse(userMessage, language = 'en') {
+  console.log(`Getting bot response for: "${userMessage}" in ${language}`);
+  
+  // Check for quick responses first
+  const quickResponse = gptService.getQuickResponse(userMessage, language);
+  if (quickResponse) {
+    console.log('Using quick response:', quickResponse);
+    return quickResponse;
+  }
+
+  console.log('Calling Gemini API...');
+  // Call Gemini API
+  const result = await gptService.callAPI(userMessage, language);
+  
+  if (result.success) {
+    console.log('Gemini API response received:', result.response);
+    return result.response;
+  } else {
+    console.error('Gemini API Error:', result.error);
+    console.log('Using fallback response:', result.fallback);
+    return result.fallback;
+  }
+}
 
 function generateBotReply(userText){
-  const normalized = userText.toLowerCase();
-  const responses = botResponses[currentLanguage] || botResponses.en;
-
-  if(normalized.includes('fee') || normalized.includes('fees') || normalized.includes('how much') || normalized.includes('coût') || normalized.includes('coûts') || normalized.includes('tarifa') || normalized.includes('tarifas') || normalized.includes('费用') || normalized.includes('多少钱')){
-    return responses.fees;
-  }
-  if(normalized.includes('admission') || normalized.includes('admit') || normalized.includes('admission') || normalized.includes('admettre') || normalized.includes('admision') || normalized.includes('admitir') || normalized.includes('招生') || normalized.includes('录取')){
-    return responses.admission;
-  }
-  if(normalized.includes('department') || normalized.includes('departments') || normalized.includes('program') || normalized.includes('département') || normalized.includes('départements') || normalized.includes('programme') || normalized.includes('departamento') || normalized.includes('departamentos') || normalized.includes('programa') || normalized.includes('部门') || normalized.includes('系') || normalized.includes('课程')){
-    return responses.departments;
-  }
-  if(normalized.includes('history') || normalized.includes('found') || normalized.includes('histoire') || normalized.includes('fondé') || normalized.includes('historia') || normalized.includes('fundado') || normalized.includes('历史') || normalized.includes('成立')){
-    return responses.history;
-  }
-  if(normalized.includes('logo')){
-    return responses.logo;
-  }
-  return responses.fallback;
+  // Fallback responses based on language
+  const fallbackResponses = {
+    en: "I'm processing your request. If this takes too long, please try again or contact the university directly.",
+    fr: "Je traite votre demande. Si cela prend trop de temps, veuillez réessayer ou contacter directement l'université.",
+    es: "Estoy procesando tu solicitud. Si esto toma demasiado tiempo, por favor intenta de nuevo o contacta directamente a la universidad.",
+    zh: "我正在处理您的请求。如果时间过长，请重试或直接联系大学。"
+  };
+  
+  return fallbackResponses[currentLanguage] || fallbackResponses.en;
 }
 
 /* ========= Send message flow ========= */
@@ -1883,15 +1937,20 @@ function sendUserMessage(text){
   // show typing indicator
   showTyping();
 
-  // mimic network / AI latency
-  setTimeout(() => {
+  // Call Gemini API for real AI response
+  getBotResponse(text, currentLanguage).then(botReply => {
     hideTyping();
-    const botReply = generateBotReply(text);
-    console.log('Bot reply:', botReply);
+    console.log('Gemini reply:', botReply);
     pushMessage('bot', botReply);
     // Speak the bot response
     speakText(botReply);
-  }, 900 + Math.random()*900);
+  }).catch(error => {
+    hideTyping();
+    console.error('Error in Gemini service call:', error);
+    const fallbackReply = generateBotReply(text);
+    pushMessage('bot', fallbackReply);
+    speakText(fallbackReply);
+  });
 }
 
 /* ========= Event listeners ========= */
@@ -2016,6 +2075,11 @@ function handleMobileViewport() {
   ensureCurrent();
   renderSessionsList();
   renderMessages();
+  
+  // Initialize Gemini Service
+  if (!initializeGPTService()) {
+    console.warn('Chatbot will use fallback responses only');
+  }
   
   // Initialize mobile viewport handling
   handleMobileViewport();
